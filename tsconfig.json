@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"], "@core/*": ["./supabase/functions/_shared/core/*"] },
+    "skipLibCheck": true
+  }
+}
