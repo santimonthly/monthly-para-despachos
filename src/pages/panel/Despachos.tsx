@@ -169,20 +169,47 @@ function Invitar() {
   const qc = useQueryClient();
   const [f, setF] = useState({ nombre: "", email: "" });
   const [enviando, setEnviando] = useState(false);
+  const [enlace, setEnlace] = useState<string | null>(null);
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     setEnviando(true);
     try {
-      await funcion("invitar", f);
+      const r = await funcion<{ enviado: boolean; enlace?: string; aviso?: string }>("invitar", f);
       qc.invalidateQueries({ queryKey: ["resumen"] });
+      if (r.enlace) return setEnlace(r.enlace);
       cerrar();
-      aviso(`Invitación enviada a ${f.email}.`);
+      aviso(r.enviado ? `Invitación enviada a ${f.email}.` : r.aviso || "Despacho invitado.");
     } catch (err) {
       aviso(mensaje(err));
     } finally {
       setEnviando(false);
     }
   };
+  if (enlace)
+    return (
+      <>
+        <h2>Comparte el enlace de acceso</h2>
+        <p className="lead">
+          No pudimos mandar el correo a {f.email} (límite de envíos). El despacho ya quedó invitado: mándale este enlace por WhatsApp o
+          correo, o ábrelo tú en una ventana de incógnito para probar. Sirve una sola vez.
+        </p>
+        <textarea className="inp code mt" readOnly value={enlace} style={{ minHeight: 96 }} onFocus={(e) => e.target.select()} />
+        <div className="ft">
+          <button className="btn" onClick={cerrar}>
+            Cerrar
+          </button>
+          <button
+            className="btn pri"
+            onClick={async () => {
+              await navigator.clipboard.writeText(enlace);
+              aviso("Enlace copiado.");
+            }}
+          >
+            Copiar enlace
+          </button>
+        </div>
+      </>
+    );
   return (
     <>
       <h2>Invitar despacho</h2>
