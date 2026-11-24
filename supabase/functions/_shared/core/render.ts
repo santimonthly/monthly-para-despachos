@@ -5,10 +5,8 @@ import { PLANTILLAS_BASE } from "./plantillas-base.ts";
 import { cortoDe, logoProvisionalDataUri, marca, sitioTexto } from "./marca.ts";
 import { descuentoDe, pesos, precioDe } from "./precios.ts";
 
-export const esc = (s: unknown) =>
-  String(s ?? "").replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
-  );
+import { esc } from "./esc.ts";
+export { esc };
 
 /** Variables que se resaltan en amarillo en la vista previa. */
 const PERSONALIZADAS = [
@@ -20,7 +18,8 @@ const PERSONALIZADAS = [
   "despacho_sitio_texto",
 ];
 
-export type Override = Partial<Pick<PlantillaBase, "asunto" | "pre" | "html">> | null | undefined;
+export type { Override } from "./tipos.ts";
+import type { Override } from "./tipos.ts";
 
 /** Plantilla efectiva: la base con el override del panel encima. n = 0, 1 o 2. */
 export function plantilla(n: number, override?: Override): Plantilla {

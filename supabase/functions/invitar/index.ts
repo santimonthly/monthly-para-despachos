@@ -2,7 +2,7 @@
 import { admin, quien } from "../_shared/supabase.ts";
 import { error, json, preflight } from "../_shared/http.ts";
 import { APP_URL } from "../_shared/env.ts";
-import { RE_CORREO } from "../_shared/core/index.ts";
+import { RE_CORREO } from "../_shared/core/excel.ts";
 
 Deno.serve(async (req) => {
   const pf = preflight(req);

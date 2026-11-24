@@ -18,7 +18,7 @@ supabase/
     _shared/core/             Lógica pura compartida con el frontend (alias @core)
     _shared/                  Cifrado, Gmail/Graph, Resend, lecturas comunes
     invitar, oauth-iniciar, oauth-callback, desconectar-correo,
-    correo-prueba, avisar-respuesta, enviar-pendientes, t, baja
+    avisar-respuesta, enviar-pendientes (+ correo de prueba), t, baja
 public/email-assets/          Imágenes de los correos (URL pública para Gmail/Outlook)
 tests/                        Pruebas de la lógica y de la base (PGlite)
 ```
@@ -36,7 +36,11 @@ npm test                  # 45 pruebas: lógica + migraciones/RLS en Postgres em
 
 Pruebas de las Edge Functions (cifrado y MIME): `deno test --allow-env supabase/functions/_shared/pruebas`.
 
-## Puesta en marcha de Supabase
+## Proyecto de Supabase actual
+
+Ya existe y está configurado: `monthly-para-despachos` (ref `awynbjzuasiyrolgcaty`, región us-east-1). Migraciones aplicadas, bucket `logos`, cron programado (con `project_url` y `cron_secret` en Vault) y las 8 Edge Functions desplegadas. Falta cargar los secretos de las funciones (tabla de abajo) y configurar Auth/SMTP.
+
+## Puesta en marcha de Supabase (desde cero)
 
 1. Crea el proyecto y aplica las migraciones: `supabase link --project-ref <ref>` y `supabase db push`.
 2. **Auth → URL configuration:** el *Site URL* es la URL de la app; agrega la misma en *Redirect URLs*.
@@ -49,7 +53,7 @@ Pruebas de las Edge Functions (cifrado y MIME): `deno test --allow-env supabase/
 | `ASSETS_URL` | Opcional. Por defecto `APP_URL/email-assets` |
 | `TOKENS_KEY` | 32 bytes en base64 para cifrar refresh tokens: `openssl rand -base64 32` |
 | `FIRMA_SECRET` | Firma de state, tracking y bajas: `openssl rand -hex 32` |
-| `CRON_SECRET` | Lo manda pg_cron al motor: `openssl rand -hex 24` |
+| `CRON_SECRET` | Lo manda pg_cron al motor: `openssl rand -hex 24`. Debe ser igual al `cron_secret` de Vault |
 | `MODO_SIMULADO` | `true` (por defecto): conecta buzones sin OAuth y no envía nada. `false` en producción |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth de Gmail |
 | `MS_CLIENT_ID` / `MS_CLIENT_SECRET` / `MS_TENANT` | OAuth de Microsoft (`MS_TENANT=common`) |
@@ -109,6 +113,7 @@ Además:
 
 ## Pendientes conocidos
 
+- El correo de prueba del alta se manda con `enviar-pendientes` y `{ prueba: true }` (así las plantillas, ~70 KB, se suben una sola vez).
 - `xlsx` 0.18.5 de npm tiene vulnerabilidades conocidas. Instálalo desde el CDN de SheetJS: `npm i https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`.
 - El bundle pesa ~1 MB. Conviene hacer code-splitting por ruta.
 - La fase 3 necesita credenciales reales para probar Gmail y Graph. El envío por Graph usa MIME para conservar List-Unsubscribe.

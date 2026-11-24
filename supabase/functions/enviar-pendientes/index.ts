@@ -1,19 +1,27 @@
 // Motor de envío. Lo llama pg_cron cada 15 minutos (ver migración _cron.sql).
+// Con { prueba: true } y sesión de despacho, manda el correo de prueba del alta (_shared/prueba.ts).
 // Por cada campaña activa: decide qué sale hoy (core/motor.ts), envía desde el buzón del
 // despacho y registra envíos y eventos. Es idempotente gracias a envios(contacto_id, paso).
 import { admin } from "../_shared/supabase.ts";
-import { error, json } from "../_shared/http.ts";
+import { error, json, preflight } from "../_shared/http.ts";
+import { correoPrueba } from "../_shared/prueba.ts";
 import { APP_URL, ASSETS_URL, env, SUPABASE_URL } from "../_shared/env.ts";
 import { cargarConfig, cargarFestivos, cargarOverrides, cargarToken } from "../_shared/datos.ts";
-import { cifrar, tokenEnvio } from "../_shared/cripto.ts";
+import { cifrar, firmar, tokenEnvio } from "../_shared/cripto.ts";
 import { accessToken, dominioRecibeCorreo, enviar, ErrorProveedor } from "../_shared/correo/proveedores.ts";
-import { activo, dentroDeVentana, hoyMx, instrumentar, planearEnvios, renderCorreo } from "../_shared/core/index.ts";
+import { dentroDeVentana, hoyMx } from "../_shared/core/fechas.ts";
+import { instrumentar, renderCorreo } from "../_shared/core/render.ts";
+import { activo, planearEnvios } from "../_shared/core/motor.ts";
 
 const PRESUPUESTO_MS = 120_000; // el resto sale en la siguiente ejecución
 
 Deno.serve(async (req) => {
-  if (req.headers.get("x-cron-secret") !== env("CRON_SECRET")) return error("No autorizado.", 401);
+  const pf = preflight(req);
+  if (pf) return pf;
   const body = await req.json().catch(() => ({}));
+  // «Enviarme una prueba» del alta: requiere sesión de despacho (se valida dentro).
+  if (body.prueba) return correoPrueba(req);
+  if (req.headers.get("x-cron-secret") !== env("CRON_SECRET")) return error("No autorizado.", 401);
   const t0 = Date.now();
   const sb = admin();
   const ahora = new Date();
@@ -106,9 +114,12 @@ Deno.serve(async (req) => {
         assetsUrl: ASSETS_URL(),
         enlaceBaja: `${APP_URL()}/baja?e=${encodeURIComponent(tk)}`,
       });
+      // Cada destino se firma para que /t/click solo redirija a los enlaces del correo.
+      const destinos = [...new Set([...m.html.matchAll(/href="(https?:\/\/[^"]+)"/g)].map((x) => x[1].replace(/&amp;/g, "&")))];
+      const firmas = new Map(await Promise.all(destinos.map(async (u) => [u, await firmar(`u:${env_.id}|${u}`)] as const)));
       const html = instrumentar(m.html, {
         pixelUrl: `${fn}/t/open?e=${encodeURIComponent(tk)}`,
-        clickUrl: (u) => `${fn}/t/click?e=${encodeURIComponent(tk)}&u=${encodeURIComponent(u)}`,
+        clickUrl: (u) => `${fn}/t/click?e=${encodeURIComponent(tk)}&u=${encodeURIComponent(u)}&s=${firmas.get(u) ?? ""}`,
         enlaceBaja: `${APP_URL()}/baja?e=${encodeURIComponent(tk)}`,
       });
 

@@ -1,6 +1,6 @@
 // Lecturas comunes con service role.
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { CONFIG_INICIAL, type Config, type Override } from "./core/index.ts";
+import { CONFIG_INICIAL, type Config, type Override } from "./core/tipos.ts";
 import { descifrar } from "./cripto.ts";
 import type { Proveedor } from "./correo/proveedores.ts";
 

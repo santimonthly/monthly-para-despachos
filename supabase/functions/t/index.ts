@@ -1,8 +1,8 @@
 // Tracking: /t/open?e=… (pixel) y /t/click?e=…&u=… (redirect).
 // Solo la primera apertura y el primer click quedan en el historial.
 import { admin } from "../_shared/supabase.ts";
-import { leerTokenEnvio } from "../_shared/cripto.ts";
-import { hoyMx } from "../_shared/core/index.ts";
+import { leerTokenEnvio, verificar } from "../_shared/cripto.ts";
+import { hoyMx } from "../_shared/core/fechas.ts";
 
 const GIF = Uint8Array.from(atob("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"), (c) => c.charCodeAt(0));
 const pixel = () =>
@@ -13,8 +13,9 @@ Deno.serve(async (req) => {
   const esClick = u.pathname.endsWith("/click");
   const destino = u.searchParams.get("u") || "";
   const envioId = await leerTokenEnvio(u.searchParams.get("e"));
-  // El destino solo se acepta si es http(s); el token firmado identifica el envío.
-  const destinoOk = /^https?:\/\//i.test(destino);
+  // El destino va firmado junto con el envío: así el enlace no sirve como redirección abierta.
+  const destinoOk =
+    !!envioId && /^https?:\/\//i.test(destino) && (await verificar(`u:${envioId}|${destino}`, u.searchParams.get("s") || ""));
 
   if (envioId) {
     const sb = admin();

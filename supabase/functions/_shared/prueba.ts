@@ -1,14 +1,13 @@
 // «Enviarme una prueba»: manda el correo 1 al propio buzón del despacho con datos de ejemplo.
-import { admin, quien } from "../_shared/supabase.ts";
-import { error, json, preflight } from "../_shared/http.ts";
-import { ASSETS_URL, MODO_SIMULADO } from "../_shared/env.ts";
-import { cargarConfig, cargarOverrides, cargarToken } from "../_shared/datos.ts";
-import { accessToken, enviar } from "../_shared/correo/proveedores.ts";
-import { CONTACTO_EJEMPLO, renderCorreo } from "../_shared/core/index.ts";
+// Se llama a través de enviar-pendientes con { prueba: true } para no duplicar las plantillas.
+import { admin, quien } from "./supabase.ts";
+import { error, json } from "./http.ts";
+import { ASSETS_URL, MODO_SIMULADO } from "./env.ts";
+import { cargarConfig, cargarOverrides, cargarToken } from "./datos.ts";
+import { accessToken, enviar } from "./correo/proveedores.ts";
+import { CONTACTO_EJEMPLO, renderCorreo } from "./core/render.ts";
 
-Deno.serve(async (req) => {
-  const pf = preflight(req);
-  if (pf) return pf;
+export async function correoPrueba(req: Request): Promise<Response> {
   const yo = await quien(req);
   if (yo?.rol !== "despacho" || !yo.despachoId) return error("Inicia sesión como despacho.", 403);
   const sb = admin();
@@ -29,4 +28,4 @@ Deno.serve(async (req) => {
     return error((e as Error).message, 502);
   }
   return json({ ok: true, para: t.email, simulado: MODO_SIMULADO() });
-});
+}

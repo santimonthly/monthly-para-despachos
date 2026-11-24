@@ -46,6 +46,9 @@ export interface PlantillaBase {
   html: string;
 }
 
+/** Cambios del panel sobre una plantilla base. */
+export type Override = Partial<Pick<PlantillaBase, "asunto" | "pre" | "html">> | null | undefined;
+
 export interface Plantilla extends PlantillaBase {
   editada: boolean;
 }

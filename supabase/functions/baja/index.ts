@@ -4,7 +4,7 @@
 import { admin } from "../_shared/supabase.ts";
 import { CORS, error, json, preflight } from "../_shared/http.ts";
 import { leerTokenEnvio } from "../_shared/cripto.ts";
-import { hoyMx } from "../_shared/core/index.ts";
+import { hoyMx } from "../_shared/core/fechas.ts";
 
 Deno.serve(async (req) => {
   const pf = preflight(req);

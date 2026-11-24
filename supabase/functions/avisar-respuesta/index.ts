@@ -4,7 +4,7 @@ import { error, json, preflight } from "../_shared/http.ts";
 import { APP_URL } from "../_shared/env.ts";
 import { cargarConfig } from "../_shared/datos.ts";
 import { enviarTransaccional } from "../_shared/resend.ts";
-import { esc } from "../_shared/core/index.ts";
+import { esc } from "../_shared/core/esc.ts";
 
 Deno.serve(async (req) => {
   const pf = preflight(req);

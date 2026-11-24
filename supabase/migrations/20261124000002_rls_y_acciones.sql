@@ -190,3 +190,12 @@ grant execute on function public.pausar_campana(uuid) to authenticated;
 grant execute on function public.accion_contacto(uuid, text) to authenticated;
 grant execute on function public.marcar_atendido(uuid) to authenticated;
 grant execute on function public.resumen_despachos() to authenticated;
+
+-- Nadie sin sesión puede llamar las acciones.
+revoke execute on function public.correos_suprimidos(text[]) from public, anon;
+revoke execute on function public.estado_correo(uuid) from public, anon;
+revoke execute on function public.programar_campana() from public, anon;
+revoke execute on function public.pausar_campana(uuid) from public, anon;
+revoke execute on function public.accion_contacto(uuid, text) from public, anon;
+revoke execute on function public.marcar_atendido(uuid) from public, anon;
+revoke execute on function public.resumen_despachos() from public, anon;

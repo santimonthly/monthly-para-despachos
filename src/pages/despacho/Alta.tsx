@@ -337,7 +337,7 @@ function PasoCorreo({ setPaso }: { setPaso: (n: number) => void }) {
   const prueba = async () => {
     setOcupado(true);
     try {
-      const r = await funcion<{ para: string; simulado: boolean }>("correo-prueba");
+      const r = await funcion<{ para: string; simulado: boolean }>("enviar-pendientes", { prueba: true });
       aviso(r.simulado ? `Prueba registrada para ${r.para} (modo simulado, no se envió).` : `Te enviamos el correo 1 a ${r.para}.`);
     } catch (e) {
       aviso(mensaje(e));
